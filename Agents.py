@@ -10,7 +10,10 @@ from langchain_mistralai import ChatMistralAI
 from langchain_core.tools import tool
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import HumanMessage, AIMessage
-from langchain.agents import create_tool_calling_agent, AgentExecutor
+try:
+    from langchain.agents import create_tool_calling_agent, AgentExecutor
+except (ImportError, AttributeError):
+    from langchain_classic.agents import create_tool_calling_agent, AgentExecutor
 from tavily import TavilyClient
 from rich import print
 
@@ -101,7 +104,7 @@ prompt = ChatPromptTemplate.from_messages([
 agent = create_tool_calling_agent(llm, raw_tools, prompt)
 
 def wrap_with_approval(func_tool):
-    @tool(name=func_tool.name, description=func_tool.description, args_schema=func_tool.args_schema)
+    @tool(func_tool.name, description=func_tool.description, args_schema=func_tool.args_schema)
     def approved_tool(*args, **kwargs):
         confirm = input(f"Agent wants to call '{func_tool.name}'. Approve? (yes/no): ")
         if confirm.lower() != "yes":
